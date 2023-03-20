@@ -22,7 +22,7 @@ imgNumber = 0
 hs, ws = int(120 * 1), int(213 * 1)
 buttonPressed = False
 buttonCounter = 0
-buttonDelay = 30
+buttonDelay = 20
 annotations = [[]]
 annotationNumber = -1
 annotationStart = False
@@ -51,7 +51,7 @@ while True:
 
         # Constraining values
         xVal = int(np.interp(lmList[8][0], [width // 10, width], [0, width]))
-        yVal = int(np.interp(lmList[8][1], [50, height - 150], [0, height]))
+        yVal = int(np.interp(lmList[8][1], [50, height - 50], [0, height]))
         indexFinger = xVal, yVal  # index finger tip
 
         # Gesture 1
@@ -89,6 +89,13 @@ while True:
 
         else:
             annotationStart = False
+
+        # Gesture 5
+        if fingers == [0, 1, 1, 1, 0]:
+            if annotations:
+                annotations.pop(-1)
+                annotationNumber -= 1
+                buttonPressed = True
 
     if buttonPressed:
         buttonCounter += 1
