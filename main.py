@@ -19,7 +19,7 @@ print(pathImages)
 
 # variables
 imgNumber = 0
-hs, ws = int(120 * 1.2), int(213 * 1.2)
+hs, ws = int(120 * 1), int(213 * 1)
 buttonPressed = False
 buttonCounter = 0
 buttonDelay = 30
@@ -46,35 +46,37 @@ while True:
     if hands and buttonPressed is False:
         hand = hands[0]
         fingers = detector.fingersUp(hand)
-        print(fingers)
-        lmList = hand['lmList']
+        # print(fingers)
+        lmList = hand['lmList']  # Landmark list
 
-        indexFinger = lmList[8][0], lmList[8][1]
-        annotationStart = False
+        # Constraining values
+        xVal = int(np.interp(lmList[8][0], [width // 10, width], [0, width]))
+        yVal = int(np.interp(lmList[8][1], [50, height - 150], [0, height]))
+        indexFinger = xVal, yVal  # index finger tip
+
         # Gesture 1
         if fingers == [1, 0, 0, 0, 0]:
-            annotationStart = False
             print("Left")
             if imgNumber > 0:
                 buttonPressed = True
                 imgNumber -= 1
                 annotations = [[]]
                 annotationNumber = -1
+                annotationStart = False
 
         # Gesture 2
         if fingers == [0, 0, 0, 0, 1]:
-            annotationStart = False
             print("Right")
             if imgNumber < len(pathImages) - 1:
                 buttonPressed = True
                 imgNumber += 1
                 annotations = [[]]
                 annotationNumber = -1
+                annotationStart = False
 
         # Gesture 3
         if fingers == [0, 1, 1, 0, 0]:
             cv2.circle(imgCurrent, indexFinger, 12, (0, 0, 255), cv2.FILLED)
-            annotationStart = False
 
         # Gesture 4
         if fingers == [0, 1, 0, 0, 0]:
@@ -84,18 +86,9 @@ while True:
                 annotations.append([])
             cv2.circle(imgCurrent, indexFinger, 12, (0, 0, 255), cv2.FILLED)
             annotations[annotationNumber].append(indexFinger)
+
         else:
             annotationStart = False
-
-        # Gesture 5
-        if fingers == [0, 1, 1, 1, 0]:
-            if annotations:
-                annotations.pop(-1)
-                annotationNumber -= 1
-                buttonPressed = True
-
-    else:
-        annotationStart = False
 
     if buttonPressed:
         buttonCounter += 1
@@ -103,6 +96,7 @@ while True:
             buttonCounter = 0
             buttonPressed = False
 
+    # Drawing annotations
     for i in range(len(annotations)):
         for j in range(len(annotations[i])):
             if j != 0:
