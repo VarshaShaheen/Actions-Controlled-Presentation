@@ -2,6 +2,7 @@ import os
 import cv2
 import pyautogui
 from cvzone.HandTrackingModule import HandDetector
+import numpy as np
 
 # variables
 width, height = pyautogui.size()
@@ -19,6 +20,9 @@ print(pathImages)
 # variables
 imgNumber = 0
 hs, ws = int(120 * 1.2), int(213 * 1.2)
+buttonPressed = False
+buttonCounter = 0
+buttonDelay = 30
 
 # hand detector
 detector = HandDetector(detectionCon=0.8, maxHands=1)
@@ -36,20 +40,40 @@ while True:
 
     hands, img = detector.findHands(img)
 
-    if hands:
+    if hands and buttonPressed is False:
         hand = hands[0]
         fingers = detector.fingersUp(hand)
         print(fingers)
+        lmList = hand['lmList']
+
+        indexFinger = lmList[8][0], lmList[8][1]
 
         # Gesture 1
-        if fingers == [1, 0 ,0 , 0, 0]:
-            print ("Left")
+        if fingers == [1, 0, 0, 0, 0]:
+            print("Left")
+            if imgNumber > 0:
+                buttonPressed = True
+                imgNumber -= 1
 
+        # Gesture 2
+        if fingers == [0, 0, 0, 0, 1]:
+            print("Right")
+            if imgNumber < len(pathImages) - 1:
+                buttonPressed = True
+                imgNumber += 1
+        # Gesture 3
+        if fingers == [0, 1, 1, 0, 0]:
+            cv2.circle(imgCurrent, indexFinger, 12, (0, 0, 255), cv2.FILLED)
+    if buttonPressed:
+        buttonCounter += 1
+        if buttonCounter > buttonDelay:
+            buttonCounter = 0
+            buttonPressed = False
 
     # Adding webcam image to the presentation
     imgSmall = cv2.resize(img, (ws, hs))
     h, w, _ = imgCurrent.shape
-    imgCurrent[0:hs, w - ws:w] = imgSmall   # overlaying camera image
+    imgCurrent[0:hs, w - ws:w] = imgSmall  # overlaying camera image
 
     cv2.imshow("Image", img)
     cv2.imshow("Slides", imgCurrent)
